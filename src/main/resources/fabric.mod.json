@@ -5,13 +5,13 @@
 	"name": "SoloCircuit-Mod",
 	"description": "This is an example description! Tell everyone what your mod is about!",
 	"authors": [
-		"Me!"
+		"Baris"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://doc.baris.top/",
+		"sources": "https://github.com/arxb233/SoloCircuit-Mod"
 	},
-	"license": "CC0-1.0",
+	"license": "Apache License 2.0",
 	"icon": "assets/solocircuit-mod/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -20,6 +20,9 @@
 		],
 		"fabric-datagen": [
 			"com.baris.solocircuit.SoloCircuitModDataGenerator"
+		],
+		"client": [
+			"com.baris.solocircuit.SoloCircuitModClient"
 		]
 	},
 	"mixins": [
