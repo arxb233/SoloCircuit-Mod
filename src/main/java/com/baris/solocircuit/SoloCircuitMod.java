@@ -25,6 +25,9 @@ public class SoloCircuitMod implements ModInitializer {
         // Proceed with mild caution.
 
         LOGGER.info("Hello Fabric world!");
+        fly();
+    }
+    public void fly() {
         // 注册 /fly 指令
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(
