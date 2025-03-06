@@ -1,5 +1,8 @@
 package com.baris.solocircuit;
 
+import com.baris.solocircuit.command.FlyCommand;
+import com.baris.solocircuit.command.TreeCommand;
+import com.baris.solocircuit.util.TreeChopper;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import net.fabricmc.api.ModInitializer;
 
@@ -25,56 +28,8 @@ public class SoloCircuitMod implements ModInitializer {
         // Proceed with mild caution.
 
         LOGGER.info("Hello Fabric world!");
-        fly();
-    }
-    public void fly() {
-        // 注册 /fly 指令
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(
-                    CommandManager.literal("fly")
-                            .then(
-                                    CommandManager.literal("speed")
-                                            .then(
-                                                    CommandManager.argument("value", FloatArgumentType.floatArg(0.1f, 10.0f))
-                                                            .executes(context -> {
-                                                                ServerPlayerEntity player = context.getSource().getPlayer();
-                                                                if (player == null) {
-                                                                    context.getSource().sendError(Text.of("此命令只能由玩家执行！"));
-                                                                    return 0;
-                                                                }
-
-                                                                // 获取速度参数
-                                                                float speed = FloatArgumentType.getFloat(context, "value");
-                                                                player.getAbilities().setFlySpeed(speed / 20.0f); // Minecraft 默认速度单位转换
-                                                                player.sendAbilitiesUpdate(); // 同步到客户端
-
-                                                                // 反馈消息
-                                                                context.getSource().sendFeedback(
-                                                                        () -> Text.of("飞行速度已设置为 " + speed), false
-                                                                );
-                                                                return 1;
-                                                            })
-                                            )
-                            )
-                            .executes(context -> {
-                                ServerPlayerEntity player = context.getSource().getPlayer();
-                                if (player == null) {
-                                    context.getSource().sendError(Text.of("此命令只能由玩家执行！"));
-                                    return 0;
-                                }
-
-                                // 切换飞行状态
-                                boolean isFlying = player.getAbilities().allowFlying;
-                                player.getAbilities().allowFlying = !isFlying;
-                                player.getAbilities().flying = !isFlying; // 如果启用飞行，立即进入飞行状态
-                                player.sendAbilitiesUpdate(); // 同步到客户端
-
-                                // 反馈消息
-                                String message = isFlying ? "飞行已关闭" : "飞行已启用";
-                                context.getSource().sendFeedback(() -> Text.of(message), false);
-                                return 1;
-                            })
-            );
-        });
+        TreeCommand.register();
+        TreeChopper.register();
+        FlyCommand.register();
     }
 }
