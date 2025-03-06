@@ -28,6 +28,10 @@ public class FlyCommand {
             source.sendError(Text.of("此命令只能由玩家执行！"));
             return 0;
         }
+        if (ScCommand.isCheatMode()) {
+            source.sendError(Text.of("当前功能需要开启SoloCircuit-Mod作弊模式，请联系op！ /sc cheat true"));
+            return 0;
+        }
 
         boolean isFlying = player.getAbilities().allowFlying;
         player.getAbilities().allowFlying = !isFlying;
@@ -42,6 +46,11 @@ public class FlyCommand {
         ServerPlayerEntity player = source.getPlayer();
         if (player == null) {
             source.sendError(Text.of("此命令只能由玩家执行！"));
+            return 0;
+        }
+
+        if (ScCommand.isCheatMode()) {
+            source.sendError(Text.of("当前功能需要开启SoloCircuit-Mod作弊模式，请联系op！ /sc cheat true"));
             return 0;
         }
 

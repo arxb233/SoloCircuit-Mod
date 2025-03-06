@@ -21,6 +21,10 @@ public class TreeCommand {
                     .executes(context -> {
                         ServerCommandSource source = context.getSource();
                         PlayerEntity player = source.getPlayer();
+                        if (ScCommand.isCheatMode()) {
+                            source.sendError(Text.of("当前功能需要开启SoloCircuit-Mod作弊模式，请联系op！ /sc cheat true"));
+                            return 0;
+                        }
                         if (player != null) {
                             if (enabledPlayers.contains(player)) {
                                 enabledPlayers.remove(player);
