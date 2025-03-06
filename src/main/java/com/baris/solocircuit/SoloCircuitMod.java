@@ -23,5 +23,9 @@ public class SoloCircuitMod implements ModInitializer {
         DigCommand.register();
         EnderBoxCommand.register();
         NetherHereCommand.register();
+        FlatCommand.register();
+        SkyChunkCommand.register();
+        EasyCommand.register();
+        TrashCommand.register();
     }
 }
