@@ -11,6 +11,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import org.apache.logging.log4j.LogManager;
@@ -25,9 +26,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TrashCommand {
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger("solocircuit-mod");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path CONFIG_PATH = Path.of("config/solocircuit/trash_blacklist.json");
+    private static final Path CONFIG_PATH = Path.of("config", "solocircuit", "trash_blacklist.json");
     private static final Set<Identifier> TRASH_BLACKLIST = loadTrashBlacklist();
 
     public static void register() {
@@ -35,29 +36,46 @@ public class TrashCommand {
             dispatcher.register(CommandManager.literal("trash")
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(CommandManager.literal("add")
-                            .then(CommandManager.argument("item", StringArgumentType.string())
+                            .then(CommandManager.argument("item", StringArgumentType.greedyString()) // 改为 greedyString
                                     .suggests((context, builder) -> {
-                                        Registries.ITEM.stream()
-                                                .map(item -> Registries.ITEM.getId(item).toString())
-                                                .forEach(builder::suggest);
+                                        Registries.ITEM.getIds().forEach(id -> builder.suggest(id.toString()));
                                         return builder.buildFuture();
                                     })
                                     .executes(context -> {
                                         String itemName = StringArgumentType.getString(context, "item");
-                                        Identifier itemId = Identifier.tryParse(itemName);
-                                        if (itemId == null || Registries.ITEM.get(itemId) == Items.AIR) {
-                                            context.getSource().sendError(Text.literal("无效的物品名称: " + itemName));
+                                        Identifier itemId;
+
+                                        // 自动补全命名空间
+                                        if (!itemName.contains(":")) {
+                                            itemId = Identifier.tryParse("minecraft:" + itemName);
+                                        } else {
+                                            itemId = Identifier.tryParse(itemName);
+                                        }
+
+                                        if (itemId == null) {
+                                            context.getSource().sendError(Text.literal("物品 ID 格式无效: " + itemName + "（请使用类似 'minecraft:dirt' 的格式）"));
                                             return 0;
                                         }
-                                        TRASH_BLACKLIST.add(itemId);
-                                        saveTrashBlacklist();
-                                        context.getSource().sendFeedback(() -> Text.literal("已将 " + itemName + " 添加到垃圾黑名单"), false);
-                                        return 1;
+
+                                        Item item = Registries.ITEM.get(itemId);
+                                        if (item == Items.AIR) {
+                                            context.getSource().sendError(Text.literal("未找到物品: " + itemName));
+                                            return 0;
+                                        }
+
+                                        if (TRASH_BLACKLIST.add(itemId)) {
+                                            saveTrashBlacklist();
+                                            context.getSource().sendFeedback(() -> Text.literal("已将 " + itemName + " 添加到垃圾黑名单"), false);
+                                            return 1;
+                                        } else {
+                                            context.getSource().sendError(Text.literal(itemName + " 已存在于黑名单中"));
+                                            return 0;
+                                        }
                                     })
                             )
                     )
                     .then(CommandManager.literal("remove")
-                            .then(CommandManager.argument("item", StringArgumentType.string())
+                            .then(CommandManager.argument("item", StringArgumentType.greedyString()) // 改为 greedyString
                                     .suggests((context, builder) -> {
                                         TRASH_BLACKLIST.forEach(id -> builder.suggest(id.toString()));
                                         return builder.buildFuture();
@@ -65,7 +83,13 @@ public class TrashCommand {
                                     .executes(context -> {
                                         String itemName = StringArgumentType.getString(context, "item");
                                         Identifier itemId = Identifier.tryParse(itemName);
-                                        if (itemId == null || !TRASH_BLACKLIST.remove(itemId)) {
+
+                                        if (itemId == null) {
+                                            context.getSource().sendError(Text.literal("物品 ID 格式无效: " + itemName));
+                                            return 0;
+                                        }
+
+                                        if (!TRASH_BLACKLIST.remove(itemId)) {
                                             context.getSource().sendError(Text.literal("未找到 " + itemName + " 在垃圾黑名单中"));
                                             return 0;
                                         }
@@ -129,7 +153,7 @@ public class TrashCommand {
                 String json = Files.readString(CONFIG_PATH);
                 Set<String> ids = GSON.fromJson(json, new TypeToken<Set<String>>() {}.getType());
                 return ids.stream()
-                        .map(Identifier::tryParse) // 使用 tryParse 以避免非法 ID 导致崩溃
+                        .map(Identifier::tryParse)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toCollection(HashSet::new));
             }
