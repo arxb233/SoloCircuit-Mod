@@ -27,5 +27,8 @@ public class SoloCircuitMod implements ModInitializer {
         SkyChunkCommand.register();
         EasyCommand.register();
         TrashCommand.register();
+        BoxCommand.register();
+        MaterialCommand.register();
+        HurtCommand.register();
     }
 }
