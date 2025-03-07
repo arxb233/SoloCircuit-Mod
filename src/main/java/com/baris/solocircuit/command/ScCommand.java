@@ -13,7 +13,17 @@ public class ScCommand {
                     .then(CommandManager.literal("cheat")
                             .then(CommandManager.literal("true")
                                     .executes(context -> {
-                                        cheatMode = !cheatMode;
+                                        cheatMode = true;
+                                        ServerPlayerEntity player = context.getSource().getPlayer();
+                                        if (player != null) {
+                                            player.sendMessage(Text.of("SoloCircuit-Mod作弊模式: " + (cheatMode ? "开启" : "关闭")), false);
+                                        }
+                                        return 1;
+                                    })
+                            )
+                            .then(CommandManager.literal("false")
+                                    .executes(context -> {
+                                        cheatMode = false;
                                         ServerPlayerEntity player = context.getSource().getPlayer();
                                         if (player != null) {
                                             player.sendMessage(Text.of("SoloCircuit-Mod作弊模式: " + (cheatMode ? "开启" : "关闭")), false);
